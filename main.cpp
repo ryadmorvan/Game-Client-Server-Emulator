@@ -1,12 +1,21 @@
-#include <SFML\Graphics.hpp>
-#include <SFML\Audio.hpp>
-#include <Windows.h>
 #include <iostream>
+#include <SFML\Graphics.hpp>
 #include <string>
 #include <conio.h>
 #include <thread>
 #include <time.h>
+#include <WS2tcpip.h>
+#include <Windows.h>
+#include <vector>
 
+
+
+
+enum switches {
+	LEFT, RIGHT, UP, DOWN
+};
+
+#pragma comment(lib, "ws2_32.lib")
 
 
 struct animation_right {
@@ -102,7 +111,6 @@ struct animation_right {
 	}
 };
 
-
 void npc_movement(sf::Sprite &sprite, animation_right &animation) {
 	int random = rand() % 100 + 1;
 	if (random == 1) {
@@ -127,7 +135,26 @@ void npc_movement(sf::Sprite &sprite, animation_right &animation) {
 	}
 }
 
-int main() {
+
+
+void SendBytes(SOCKET &sock, switches S) {
+	if (S == LEFT) {
+		send(sock, "Left", sizeof("Left"), NULL);
+	}
+	else if (S == RIGHT) {
+		send(sock, "Right", sizeof("Right"), NULL);
+	}
+	else if (S == UP) {
+		send(sock, "Up", sizeof("Up"), NULL);
+	}
+	else if (S == DOWN) {
+		send(sock, "Down", sizeof("Down"), NULL);
+	}
+}
+
+
+
+void game_start(SOCKET &sock) {
 	srand(unsigned(NULL));
 	sf::RenderWindow window(sf::VideoMode(595, 595), "Game Learn", sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 
@@ -158,17 +185,27 @@ int main() {
 	sf::Sprite sprite2;
 	sprite2.setTexture(texture2);
 
+	std::vector<sf::Sprite> sprites;
+	sprites.push_back(map);
+	sprites.push_back(sprite);
+	sprites.push_back(sprite2);
+
 	sprite2.move(sf::Vector2f(50, 40));
 
 	animation_right animation1;
-	sprite.setTextureRect(sf::IntRect(0, 0, 30, 43));
-	sprite2.setTextureRect(sf::IntRect(0, 0, 30, 43));
+	sprites.at(1).setTextureRect(sf::IntRect(0, 0, 30, 43));
+	sprites.at(2).setTextureRect(sf::IntRect(0, 0, 30, 43));
 
 	int x{ 0 }, y{ 0 };
-
+	char buf[4096];
 	while (window.isOpen()) {
 		sf::Event evnt;
-		npc_movement(sprite2, animation1);
+		ZeroMemory(buf, 4096);
+		int bytesRecieved = recv(sock, buf, 4096, NULL);
+		if (bytesRecieved > 0) {
+			std::cout << std::string(buf, 0, bytesRecieved) << std::endl;
+		}
+		//npc_movement(sprites.at(2), animation1);
 		while (window.pollEvent(evnt)) {
 
 			if (evnt.type == evnt.Closed) {
@@ -179,48 +216,80 @@ int main() {
 			{
 				if (x >= 0) {
 					x -= 4;
-					std::cout << "CORD: X:"<< x << " Y:" << y << std::endl;
-					sprite.move(sf::Vector2f(-4, 0));
+					std::cout << "CORD: X:" << x << " Y:" << y << std::endl;
+					sprites.at(1).move(sf::Vector2f(-4, 0));
+					SendBytes(sock, LEFT);
 				}
-				animation1.move_left(sprite);
+				animation1.move_left(sprites.at(1));
 			}
 			else if (GetAsyncKeyState(VK_RIGHT))
 			{
 				if (x <= 564) {
 					x += 4;
 					std::cout << "CORD: X:" << x << " Y:" << y << std::endl;
-					sprite.move(sf::Vector2f(4, 0));
+					sprites.at(1).move(sf::Vector2f(4, 0));
+					SendBytes(sock, RIGHT);
 				}
-				animation1.move_right(sprite);
+				animation1.move_right(sprites.at(1));
 			}
 			else if (GetAsyncKeyState(VK_DOWN)) {
 				if (y <= 552) {
 					y += 4;
 					std::cout << "CORD: X:" << x << " Y:" << y << std::endl;
-					sprite.move(sf::Vector2f(0, 4));
+					sprites.at(1).move(sf::Vector2f(0, 4));
+					SendBytes(sock, DOWN);
 				}
-				animation1.move_down(sprite);
+				animation1.move_down(sprites.at(1));
 			}
 			else if (GetAsyncKeyState(VK_UP)) {
 				if (y >= 0) {
 					y -= 4;
 					std::cout << "CORD: X:" << x << " Y:" << y << std::endl;
-					sprite.move(sf::Vector2f(0, -4));
+					sprites.at(1).move(sf::Vector2f(0, -4));
+					SendBytes(sock, UP);
 				}
-				animation1.move_up(sprite);
+				animation1.move_up(sprites.at(1));
 			}
 
 		}
 
 
 		window.clear();
-		window.draw(map);
-		window.draw(sprite);
-		window.draw(sprite2);
+		for (auto &sprite : sprites) {
+			window.draw(sprite);
+		}
 
 
 		window.display();
 		Sleep(50);
+	}
+}
+
+int main() {
+	std::string ipAddress = "127.0.0.1";
+	WSADATA wsData;
+	WORD ver = MAKEWORD(2, 2);
+	int wsok = WSAStartup(ver, &wsData);
+	if (wsok != 0) {
+		std::cerr << "Error while Initializing" << std::endl;
+	}
+	//Create a socket
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, NULL);
+	if (sock == INVALID_SOCKET) {
+		std::cerr << "Error while Creating a Socket" << std::endl;
+	}
+	//Fill in hint
+	sockaddr_in hint;
+	hint.sin_family = AF_INET;
+	hint.sin_port = htons(5400);
+	inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+	//Connect to the server
+	int connectResult = connect(sock, (sockaddr*)&hint, sizeof(hint));
+	u_long mode = 1;
+	ioctlsocket(sock, FIONBIO, &mode);
+	if (connectResult != SOCKET_ERROR) {
+		std::thread sendm(game_start, std::ref(sock));
+		sendm.detach();
 	}
 
 
