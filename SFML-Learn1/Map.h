@@ -9,7 +9,7 @@ class Map : public TextureUI {
 public:
 	Map(std::string &&loadTexture) : TextureUI(loadTexture) {
 	}
-	virtual void move(float x, float y) override {
+	virtual void move(float x, float y, move_enum move) override {
 		sprite.move(sf::Vector2f(x, y));
 	}
 };

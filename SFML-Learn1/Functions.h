@@ -68,51 +68,39 @@ void bytesCommand(std::vector<std::shared_ptr<Player>> &players, std::string &co
 		players.pop_back();
 	}
 	if (command == "Down") {
-		players.at(1)->move(0, 4);
-		animation.move_down(players.at(1)->sprite);
+		players.at(1)->move(0, 4, DOWN_A);
 	}
 	if (command == "Left") {
-		players.at(1)->move(-4, 0);
-		animation.move_left(players.at(1)->sprite);
+		players.at(1)->move(-4, 0, LEFT_A);
 	}
 	if (command == "Right") {
-		players.at(1)->move(4, 0);
-		animation.move_right(players.at(1)->sprite);
+		players.at(1)->move(4, 0, RIGHT_A);
 	}
 	if (command == "Up") {
-		players.at(1)->move(0, -4);
-		animation.move_up(players.at(1)->sprite);
+		players.at(1)->move(0, -4, UP_A);
 	}
 }
 
 
-void movements(std::vector<std::shared_ptr<Player>> &players, animation_right &animation, switches S, float &x, float &y, SOCKET &sock) {
+void movements(std::vector<std::shared_ptr<Player>> &players, animation_right &animation, switches S, SOCKET &sock) {
 	switch (S) {
 	case LEFT: {
-		players.at(0)->move(-4, 0);
-		animation.move_left(players.at(0)->sprite);
-		x -= 4;
+		players.at(0)->move(-4, 0, LEFT_A);
 		SendBytes(sock, LEFT);
 		break;
 		}
 	case RIGHT: {
-		players.at(0)->move(4, 0);
-		animation.move_right(players.at(0)->sprite);
-		x += 4;
+		players.at(0)->move(4, 0, RIGHT_A);
 		SendBytes(sock, RIGHT);
 		break;
 		}
 	case DOWN: {
-		players.at(0)->move(0, 4);
-		animation.move_down(players.at(0)->sprite);
-		y += 4;
+		players.at(0)->move(0, 4, DOWN_A);
 		SendBytes(sock, DOWN);
 		break;
 		}
 	case UP: {
-		players.at(0)->move(0, -4);
-		animation.move_up(players.at(0)->sprite);
-		y -= 4;
+		players.at(0)->move(0, -4, UP_A);
 		SendBytes(sock, UP);
 		break;
 		}

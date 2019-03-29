@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 
+enum move_enum;
 
 class TextureUI {
 private:
@@ -17,6 +18,6 @@ public:
 		}
 		sprite.setTexture(texture);
 	}
-	virtual void move(float x, float y) = 0;
+	virtual void move(float x, float y, move_enum move) = 0;
 };
 

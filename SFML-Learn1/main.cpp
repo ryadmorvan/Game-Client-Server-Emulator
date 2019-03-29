@@ -1,3 +1,5 @@
+
+//Libraries
 #include <iostream>
 #include <SFML\Graphics.hpp>
 #include <string>
@@ -63,16 +65,16 @@ int main() {
 			}
 
 			if (GetAsyncKeyState(VK_LEFT)) {
-				movements(players, animation, LEFT, x, y, sock);
+				movements(players, animation, LEFT, sock);
 			}
 			else if (GetAsyncKeyState(VK_RIGHT)) {
-				movements(players, animation, RIGHT, x, y, sock);
+				movements(players, animation, RIGHT, sock);
 			}
 			else if (GetAsyncKeyState(VK_DOWN)) {
-				movements(players, animation, DOWN, x, y, sock);
+				movements(players, animation, DOWN, sock);
 			}
 			else if (GetAsyncKeyState(VK_UP)) {
-				movements(players, animation, UP, x, y, sock);
+				movements(players, animation, UP, sock);
 			}
 		}
 		
@@ -83,7 +85,7 @@ int main() {
 			window.draw(player->sprite);
 		}
 		window.display();
-		std::cout << "X[" << x << "]" << " Y[" << y << "]" << std::endl;
+		std::cout << "X[" << players.at(0)->get_x() << "]" << " Y[" << players.at(0)->get_y() << "]" << std::endl;
 		Sleep(50);
 	}
 
