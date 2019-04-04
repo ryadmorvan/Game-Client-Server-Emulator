@@ -23,6 +23,9 @@ public:
 		}
 		sprite.setTexture(texture);
 		sprite.setTextureRect(sf::IntRect(0, 0, 30, 43));
+		sprite.setPosition(20.f, 50.f);
+		x = 20;
+		y = 50;
 	}
 	
 	float get_x() {

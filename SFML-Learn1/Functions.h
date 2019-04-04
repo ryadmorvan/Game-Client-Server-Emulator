@@ -4,6 +4,7 @@
 #include <string>
 #include <Windows.h>
 #include "Movements.h"
+#include "UI.h"
 
 
 enum switches {
@@ -60,7 +61,7 @@ void ConnectSocket(SOCKET &socket, std::string &&ipAddress, int port) {
 	int connectResult = connect(socket, (sockaddr*)&hint, sizeof(hint));
 }
 
-void bytesCommand(std::vector<std::shared_ptr<Player>> &players, std::string &command, animation_right &animation) {
+void bytesCommand(std::vector<std::shared_ptr<Player>> &players, std::string &command) {
 	if (command == "connected") {
 		players.emplace_back(std::make_unique<Player>("Sprites/Character3.png"));
 	}
@@ -82,7 +83,7 @@ void bytesCommand(std::vector<std::shared_ptr<Player>> &players, std::string &co
 }
 
 
-void movements(std::vector<std::shared_ptr<Player>> &players, animation_right &animation, switches S, SOCKET &sock) {
+void movements(std::vector<std::shared_ptr<Player>> &players, switches S, SOCKET &sock) {
 	switch (S) {
 	case LEFT: {
 		players.at(0)->move(-4, 0, LEFT_A);
@@ -103,6 +104,36 @@ void movements(std::vector<std::shared_ptr<Player>> &players, animation_right &a
 		players.at(0)->move(0, -4, UP_A);
 		SendBytes(sock, UP);
 		break;
+		}
+	}
+}
+
+void Game_menu(sf::RenderWindow &window, bool &Game_Start, sf::Event &evnt, GameInterface &Menu) {
+	if (Game_Start != true) {
+		for (;;) {
+			window.pollEvent(evnt);
+			if (evnt.type == evnt.Closed) {
+				window.close();
+			}
+			if (GetAsyncKeyState(VK_UP)) {
+				Menu.move_up();
+			}
+			if (GetAsyncKeyState(VK_DOWN)) {
+				Menu.move_down();
+			}
+			if (GetAsyncKeyState(VK_RETURN)) {
+				if (Menu.animation.getIterator() == 0) {
+					Game_Start = true;
+					break;
+				}
+				if (Menu.animation.getIterator() == 2) {
+					window.close();
+				}
+			}
+			window.clear();
+			window.draw(Menu.sprite);
+			window.display();
+			Sleep(200);
 		}
 	}
 }
