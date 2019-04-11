@@ -30,12 +30,13 @@ void SendBytes(SOCKET &sock, switches S) {
 }
 
 
-bool InitConnection() {
+bool InitConnection()
+{
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
 	int wsok = WSAStartup(ver, &wsData);
-	if (wsok != 0) {
-		std::cerr << "Couldn't Initialize Winsock" << std::endl;
+	if (wsok != 0)
+	{
 		return false;
 	}
 	return true;
@@ -108,7 +109,7 @@ void movements(std::vector<std::shared_ptr<Player>> &players, switches S, SOCKET
 	}
 }
 
-void Game_menu(sf::RenderWindow &window, bool &Game_Start, sf::Event &evnt, GameInterface &Menu) {
+void Game_menu(sf::RenderWindow &window, bool &Game_Start, sf::Event &evnt, GameInterface *Menu) {
 	if (Game_Start != true) {
 		for (;;) {
 			window.pollEvent(evnt);
@@ -116,22 +117,22 @@ void Game_menu(sf::RenderWindow &window, bool &Game_Start, sf::Event &evnt, Game
 				window.close();
 			}
 			if (GetAsyncKeyState(VK_UP)) {
-				Menu.move_up();
+				Menu->move_up();
 			}
 			if (GetAsyncKeyState(VK_DOWN)) {
-				Menu.move_down();
+				Menu->move_down();
 			}
 			if (GetAsyncKeyState(VK_RETURN)) {
-				if (Menu.animation.getIterator() == 0) {
+				if (Menu->animation.getIterator() == 0) {
 					Game_Start = true;
 					break;
 				}
-				if (Menu.animation.getIterator() == 2) {
+				if (Menu->animation.getIterator() == 2) {
 					window.close();
 				}
 			}
 			window.clear();
-			window.draw(Menu.sprite);
+			window.draw(Menu->sprite);
 			window.display();
 			Sleep(200);
 		}

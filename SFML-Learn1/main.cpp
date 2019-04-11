@@ -36,8 +36,8 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(595, 595), "Game Learn", sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 	InitConnection();
 	SOCKET sock = CreateSocket();
-	Map map("Maps/Forest.png");
-	GameInterface Menu("UI/main-menu.png");
+	std::unique_ptr<Map> map = std::make_unique<Map>("Maps/Forest.png");
+	std::unique_ptr<GameInterface> Menu = std::make_unique<GameInterface>("UI/main-menu.png");
 	ConnectSocket(sock, "127.0.0.1", 5400);
 ///////////////////////////////////////////////////////////////Initialzation
 	//Player
@@ -52,7 +52,7 @@ int main() {
 		std::string command;
 		while (window.isOpen()) {
 			sf::Event evnt;
-			Game_menu(window, Game_Start, evnt, Menu);
+			Game_menu(window, Game_Start, evnt, Menu.get());
 			ZeroMemory(buf, 4096);
 			int bytesRecieved;
 			bytesRecieved = recv(sock, buf, 4096, NULL);
@@ -89,7 +89,7 @@ int main() {
 
 
 			window.clear();
-			window.draw(map.sprite);
+			window.draw(map->sprite);
 			////////////////////////////////////
 			for (auto &player : players) {
 				window.draw(player->sprite);
